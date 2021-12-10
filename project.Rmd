@@ -1,0 +1,206 @@
+---
+title: "Replication"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Replication Analysis of **Sex- And tissue-specific differences in telomere length in a reptile**
+
+<br>
+
+#### *Miguel Rubio García*
+
+#### *December 10, 2021*
+
+<img src="img/Lagartos.png" width="###px"/>
+        
+### **Introduction:**
+
+<br>
+
+##### I will be replicating the obtained data from Rollings et al. (2019) which studies the differences on the length of telomeres from different organs and tissues in painted dragon lizards (*Ctenophorus pictus*).
+##### Telomeres are long repeated sequences of 6 nucleotides (TTAGGG) at both ends of chromosomes. It is important to know that at the end of every DNA replication cycle, before cellual division, the last portion of the DNA is lost due to how the DNA replication mechanism and DNA polimerases work to copy the DNA. The main purpose of these structures is **protecting the cell DNA** where the useful information is coded and as a result the cell can mantein a complete genetic material.
+
+<br>
+
+##### Traditionally, DNA samples to study and/or identify telomeres' length are obteined from blood because it is the less invading method for the organism among some other advantages and sometimes, results from this telomeric DNA is extended generally to every tissue. However, the authors from this article suggest that this practise might not be accurate because different organs have unique propierties and nonidentical methabolic rates which can affect to telomeres' length. This hypothesis led them to measure telomeres' length in several tissues from this reptile to make a comparision and determine if there are significant differences among them and also if sex may have an effect on this possible distinct lengths.
+
+<br>
+
+##### To do so, they obteined and measure telomeres from 5 different organs or tissues: **blood**, **brain**, **heart**, **liver** and **spleen** and quantified its length performing a quantitative PCR aka q-PCR. In order to make comparisions between the different organs and individuals, the ribosomal 18S gene was utilized as a reference because its length is invariant (92 nucleotide amplicon). The relation between the telomeres length and the 18S gene is shown in the data set as "*organ name*RelTel" for the 5 analyzed organs.
+
+
+      EXPLICACIÓN DE QUÉ VOY A HACER EN EL ANALISIS
+
+
+### **Preparing the data**
+
+```{r}
+library(readxl) #Reads excell data
+library(sciplot) #Contains "se()" function to calculate sample standard errors
+library(ggplot2) #Used to create ggplots
+library(reshape2) #Used to melt values and plot variables simultaneously
+```
+
+```{r}
+f <- "C:/Users/MIGUEL/Desktop/R/directory1/REPLICATION/reptile_data.xlsx"
+data <- read_excel(f, sheet = 1, col_names = TRUE)
+d <- na.omit(data)
+head(d)
+attach(d)
+```
+
+<br>
+
+##### First thing I had to do was changing the data set. In the original excell file ("*original data*"), the missing values were labled as ".". This was a problem because when I tried to do the analysis, even though I applied the "na.omit" function, I obteined a NA result. I manually changed every "." in the excell field to "NA" in order to make R understand that that was a missing value and then apply the "na.omit" function ("*reptile_data*" which is the one I used for the analysis). However, I still was getting the following error "*argument is not numeric or logical: returning NA*". Finally, it turned out that some numeric data from the file was being considered as non-numeric vectors.
+##### Using the "is.numeric()" function I checked which columns were not being considered numeric and I reached the conclusion that every column that contained a "NA" (that used to be a "." in the original file) was nos being considered numeric. However, if the NAs are changed by a "0", the column is considered as numeric.
+<br>
+
+#### **Test:**
+<br>
+
+```{r}
+#"is.numeric()" function tests if an object is numeric (TRUE) or if it is not (FALSE).
+
+is.numeric(BloodRelTel) #Column that has NAs
+
+is.numeric(`Egg mass at laying`) #Column that lacks NAs
+
+is.numeric(`TL at death`) #Column that only has one NA
+
+is.numeric(`SVL at death`) #Another column that lacks NA
+
+is.numeric(BloodRelTel_Telb_run_no) #Column with NAs that were changed to "0"
+
+```
+
+<br>
+
+##### I did not want to change the "NA" values to "0" because it may disrupt future analysis. As a consequence, to be able to use the data from the 5 "*organ name*RelTel" columns, I created 5 new variables called after the organ in which the measurement was performed while making use of the "na.omit" function to get rid of the missing values and the "as.numeric" function to make sure values were logical. Only by applying these 2 functions I could use the objects.
+
+<br>
+
+```{r}
+blood <- na.omit(as.numeric(d$BloodRelTel))
+heart <- na.omit(as.numeric(d$HeartRelTel))
+liver <- na.omit(as.numeric(d$LiverRelTel))
+brain <- na.omit(as.numeric(d$BrainRelTel))
+spleen <- na.omit(as.numeric(d$SpleenRelTel))
+```
+<br>
+
+##### The warining message "NAs introduced by coercion"is just R alerting the fact that some values in the original vector were converted to NAs because they couldn’t be converted to numeric values. This values are the manually changed "NAs" described above.
+
+<br>
+
+```{r}
+blood
+heart
+liver
+brain
+spleen #Resulting vectors
+```
+
+<br>
+
+### **Means and standard errors:**
+
+##### The relative telomere length (RTL) was measured in each organ from the individual and the mean and standard error of the mean from the reptile's population was calculated:
+
+<br>
+
+```{r}
+mean(blood)
+se(blood)
+
+mean(heart) #Authors have not used the value "150,49" for the mean.
+se(heart)
+
+mean(liver) 
+se(liver)
+
+mean(brain) 
+se(brain)
+
+mean(spleen) 
+se(spleen)
+```
+
+<br>
+
+##### Apart from the blood results, in the other 4 organ's calculation of the mean the authors have discard one or more values and that is why the results are slightly different from the ones on the article. For example, in the case of the heart they removed the value "150,49".
+
+<br>
+
+#### **Original means and standard errors from the article:**
+
+##### Blood: 95.41 (±10.89)
+##### Heart: 50.65 (±7.641)
+##### Liver: 63.77 (±6.079)
+##### Brain: 47.90 (±7.857)
+##### Spleen: 43.69 (±12.80)
+
+<br>
+
+
+### **Boxplots:**
+
+##### In order to see if there are diferences on the relative telmere length between males and females in each organ, the authors set a boxplot in which they show the RTL in the y axis and the organ and sex in the x axix.
+##### To replicate this graph (figure 3), I had to create 5 new vectors for the RTL of the 5 organs applying the "as.numeric()" function but not the "omit.na()" because if I use the already created vectors I obtain the following error: *"Error: Aesthetics must be either length 1 or the same as the data (24)"*.
+
+<br>
+```{r}
+blood2 <- as.numeric(BloodRelTel)
+heart2 <- as.numeric(HeartRelTel)
+liver2 <- as.numeric(LiverRelTel)
+brain2 <- as.numeric(BrainRelTel)
+spleen2 <- as.numeric(SpleenRelTel)
+
+#Vectors with the values converted into numeric but mantaining the NAs.
+```
+
+<br>
+
+##### Next problem is being able to plot all the RTL from every organ by sex at the same time. I created a new data frame that only includes the "Sex" variable from the original data set (which is defined by 2 possible values: "F" for females and "M" for males) and the 5 vectors I have just created. This way I can apply the "melt" function which puts together all the quantitative data from different variables against a qualitative vector (Sex in this case).
+
+<br>
+```{r}
+df <- data.frame(Sex, blood2, brain2, heart2, liver2, spleen2)
+names(df) <- c("Sex", "Blood", "Brain", "Heart", "Liver", "Spleen")
+head(df)
+
+length(spleen2)
+```
+
+```{r}
+data_long <- melt(df) #Using "Sex" as id variables
+data_long
+```
+
+```{r}
+plot <- ggplot(data_long, aes(x = variable, y = value, color = Sex)) + geom_boxplot() + ylab("Relative telomere length") + theme_bw() + theme(axis.title.x = element_blank())
+
+plot
+```
+
+```{r, eval=F}
+#Explanation of multiple plotting
+https://statisticsglobe.com/draw-multiple-boxplots-in-one-graph-in-r
+```
+
+<br>
+
+#### Original plot from the article:
+
+<br>
+
+<img src="img/Plot.png" width="###px"/>
+
+<br>
+
+##### As the data points that have been discarted for the plot are not indicated in the article, there are slight differences in the shape of the boxes and the error bars.
