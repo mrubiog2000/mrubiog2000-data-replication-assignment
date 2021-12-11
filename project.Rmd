@@ -313,8 +313,8 @@ tab3
 
 <br>
 
-```{r}
 
+```{r}
 draw1 <- ggplot(aes(y = log(liver2), x = log(blood2)), data = d) + ylim(2.5, 6) + geom_point() + geom_abline() + xlab("ln(Blood RTL)") + ylab("ln(Liver RTL)")
 
 draw2 <- ggplot(aes(y = log(heart2), x = log(brain2)), data = d) + ylim(2.5, 6) + geom_point() + geom_abline() + xlab("ln(Brain RTL)") + ylab("ln(Heart RTL)")
@@ -322,8 +322,12 @@ draw2 <- ggplot(aes(y = log(heart2), x = log(brain2)), data = d) + ylim(2.5, 6) 
 draw3 <- ggplot(aes(y = log(spleen2), x = log(brain2)), data = d) + ylim(2.5, 6) + geom_point() + geom_abline() + xlab("ln(Brain RTL)") + ylab("ln(Spleen RTL)")
 
 draw4 <- ggplot(aes(y = log(liver2), x = log(heart2)), data = d) + ylim(2.5, 6) + geom_point() + geom_abline() + xlab("ln(Heart RTL)") + ylab("ln(Liver RTL)")
+```
 
+<br>
 
+<center>
+```{r}
 grid.arrange(draw1, draw2, draw3, draw4, ncol=2)
 ```
 
@@ -333,7 +337,7 @@ grid.arrange(draw1, draw2, draw3, draw4, ncol=2)
 
 <br>
 
-<img src="img/Graph.png" width="###px"/>
+<center> <img src="img/Graph.png" width="###px"/>
 
 <br>
 
@@ -388,7 +392,7 @@ https://statisticsglobe.com/draw-multiple-boxplots-in-one-graph-in-r
 
 <br>
 
-<img src="img/Plot.png" width="###px"/>
+<center> <img src="img/Plot.png" width="###px"/>
 
 <br>
 
